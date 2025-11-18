@@ -17,9 +17,11 @@ export default function VendorDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchServices();
-    fetchRequests();
-  }, []);
+    if (profile?.id) {
+      fetchServices();
+      fetchRequests();
+    }
+  }, [profile?.id]);
 
   const fetchServices = async () => {
     try {
@@ -39,7 +41,23 @@ export default function VendorDashboard() {
   };
 
   const fetchRequests = async () => {
+    if (!profile?.id) return;
+
     try {
+      const { data: vendorServices, error: servicesError } = await supabase
+        .from('services')
+        .select('category_id')
+        .eq('vendor_id', profile.id);
+
+      if (servicesError) throw servicesError;
+
+      const vendorCategoryIds = vendorServices?.map(s => s.category_id) || [];
+
+      if (vendorCategoryIds.length === 0) {
+        setRequests([]);
+        return;
+      }
+
       const { data: requestsData, error: requestsError } = await supabase
         .from('service_requests')
         .select(`
@@ -52,13 +70,6 @@ export default function VendorDashboard() {
 
       if (requestsError) throw requestsError;
 
-      const vendorServices = await supabase
-        .from('services')
-        .select('category_id')
-        .eq('vendor_id', profile?.id);
-
-      const vendorCategoryIds = vendorServices.data?.map(s => s.category_id) || [];
-
       const relevantRequests = (requestsData || []).filter((request: ServiceRequest & { items: RequestItem[] }) =>
         request.items.some(item => vendorCategoryIds.includes(item.category_id))
       );
@@ -66,12 +77,14 @@ export default function VendorDashboard() {
       setRequests(relevantRequests);
     } catch (error) {
       console.error('Error fetching requests:', error);
+      setRequests([]);
     }
   };
 
   const handleServiceAdded = () => {
     setShowAddService(false);
     fetchServices();
+    fetchRequests();
   };
 
   return (
