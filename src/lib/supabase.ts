@@ -37,6 +37,7 @@ export interface Service {
   updated_at: string;
   category?: ServiceCategory;
   vendor?: Profile;
+  images?: ServiceImage[];
 }
 
 export interface ServiceRequest {
@@ -112,4 +113,13 @@ export interface Message {
   is_read: boolean;
   created_at: string;
   sender?: Profile;
+}
+
+export interface ServiceImage {
+  id: string;
+  service_id: string;
+  image_url: string;
+  display_order: number;
+  is_primary: boolean;
+  created_at: string;
 }

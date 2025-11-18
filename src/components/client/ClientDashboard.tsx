@@ -24,7 +24,7 @@ export default function ClientDashboard() {
     try {
       const { data, error } = await supabase
         .from('services')
-        .select('*, category:service_categories(*), vendor:profiles(full_name, email, phone)')
+        .select('*, category:service_categories(*), vendor:profiles(full_name, email, phone), images:service_images(*)')
         .eq('is_available', true)
         .order('created_at', { ascending: false });
 

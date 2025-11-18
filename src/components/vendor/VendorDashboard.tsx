@@ -25,7 +25,7 @@ export default function VendorDashboard() {
     try {
       const { data, error } = await supabase
         .from('services')
-        .select('*, category:service_categories(*)')
+        .select('*, category:service_categories(*), images:service_images(*)')
         .eq('vendor_id', profile?.id)
         .order('created_at', { ascending: false });
 
