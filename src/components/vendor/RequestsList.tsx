@@ -56,6 +56,18 @@ export default function RequestsList({ requests, onUpdate }: RequestsListProps) 
   };
 
   if (requests.length === 0) {
+    const hasServices = vendorServices.length > 0;
+
+    if (!hasServices) {
+      return (
+        <div className="text-center py-12 bg-blue-50 rounded-lg border-2 border-blue-200">
+          <p className="text-blue-900 font-medium">No services added yet</p>
+          <p className="text-sm text-blue-700 mt-1">Add at least one service to start receiving client requests</p>
+          <p className="text-xs text-blue-600 mt-3">Go to "My Services" tab and click "Add Service" to get started</p>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <p className="text-gray-600">No client requests at the moment</p>

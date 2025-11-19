@@ -44,6 +44,18 @@ export default function VendorDashboard() {
     if (!profile?.id) return;
 
     try {
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('service_requests')
+        .select(`
+          *,
+          client:profiles(full_name, email, phone),
+          items:request_items(*, category:service_categories(*))
+        `)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false });
+
+      if (requestsError) throw requestsError;
+
       const { data: vendorServices, error: servicesError } = await supabase
         .from('services')
         .select('category_id')
@@ -57,18 +69,6 @@ export default function VendorDashboard() {
         setRequests([]);
         return;
       }
-
-      const { data: requestsData, error: requestsError } = await supabase
-        .from('service_requests')
-        .select(`
-          *,
-          client:profiles(full_name, email, phone),
-          items:request_items(*, category:service_categories(*))
-        `)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false });
-
-      if (requestsError) throw requestsError;
 
       const relevantRequests = (requestsData || []).filter((request: ServiceRequest & { items: RequestItem[] }) =>
         request.items.some(item => vendorCategoryIds.includes(item.category_id))
@@ -170,7 +170,15 @@ export default function VendorDashboard() {
 
             {activeTab === 'requests' && (
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">Client Requests</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900">Client Requests</h2>
+                  <button
+                    onClick={fetchRequests}
+                    className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition"
+                  >
+                    Refresh
+                  </button>
+                </div>
                 <RequestsList requests={requests} onUpdate={fetchRequests} />
               </div>
             )}
